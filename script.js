@@ -1,27 +1,30 @@
 const holes = document.querySelectorAll('.hole');
 const scoreDisplay = document.getElementById('score');
 const timeLeftDisplay = document.getElementById('time-left');
+const startButton = document.getElementById('start-btn');
 
 let score = 0;
 let timeLeft = 30;
-let currentHole;
 let timerId;
 let moleTimer;
+let activeMole;
 
 function randomHole() {
-  holes.forEach(hole => hole.classList.remove('mole'));
-  const randomIndex = Math.floor(Math.random() * holes.length);
-  const hole = holes[randomIndex];
-  hole.classList.add('mole');
-  currentHole = hole;
+  if (activeMole) activeMole.classList.remove('up');
+
+  const index = Math.floor(Math.random() * holes.length);
+  const mole = holes[index].querySelector('.mole');
+  mole.classList.add('up');
+  activeMole = mole;
 }
 
 holes.forEach(hole => {
-  hole.addEventListener('click', () => {
-    if (hole === currentHole && hole.classList.contains('mole')) {
+  const mole = hole.querySelector('.mole');
+  mole.addEventListener('click', () => {
+    if (mole.classList.contains('up')) {
       score++;
       scoreDisplay.textContent = score;
-      hole.classList.remove('mole');
+      mole.classList.remove('up');
     }
   });
 });
@@ -34,11 +37,23 @@ function countDown() {
   timeLeft--;
   timeLeftDisplay.textContent = timeLeft;
 
-  if (timeLeft === 0) {
+  if (timeLeft <= 0) {
     clearInterval(timerId);
     clearInterval(moleTimer);
-    alert('⏰ Time\'s up! Your final score is: ' + score);
+    if (activeMole) activeMole.classList.remove('up');
+    alert("Game Over! 🎉 Your score: " + score);
+    startButton.disabled = false;
   }
 }
-moveMole();
-timerId = setInterval(countDown, 1000);
+
+startButton.addEventListener('click', () => {
+  score = 0;
+  timeLeft = 30;
+  scoreDisplay.textContent = score;
+  timeLeftDisplay.textContent = timeLeft;
+  if (activeMole) activeMole.classList.remove('up');
+
+  moveMole();
+  timerId = setInterval(countDown, 1000);
+  startButton.disabled = true;
+});
